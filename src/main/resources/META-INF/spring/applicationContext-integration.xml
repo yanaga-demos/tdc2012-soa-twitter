@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration" xmlns:int-twitter="http://www.springframework.org/schema/integration/twitter"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+	http://www.springframework.org/schema/integration/twitter http://www.springframework.org/schema/integration/twitter/spring-integration-twitter.xsd">
+
+	<int-twitter:search-inbound-channel-adapter id="tdc2012search" query="#TDC2012"
+		channel="twitterSearchChannel">
+		<int:poller fixed-rate="5000" max-messages-per-poll="5" />
+	</int-twitter:search-inbound-channel-adapter>
+
+	<int:transformer id="profileImageTransformer" input-channel="twitterSearchChannel" expression="payload.profileImageUrl"
+		output-channel="profileImageUrlChannel" />
+
+	<int:transformer id="profileImageNormalTransformer" input-channel="profileImageUrlChannel"
+		output-channel="repositoryChannel">
+		<bean class="br.com.yanaga.tdc2012.soa.twitter.integration.ProfileImageUrlTransformer" />
+	</int:transformer>
+
+	<int:service-activator id="repositoryService" input-channel="repositoryChannel" ref="repository">
+	</int:service-activator>
+</beans>
